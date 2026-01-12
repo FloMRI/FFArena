@@ -10,8 +10,7 @@ return [
     */
     'base_url' => env('RIOT_DRAGON_BASE_URL'),
 
-    'versions_url' => env('RIOT_DRAGON_BASE_URL').'/api/versions.json',
+    'versions_url' => '/api/versions.json',
 
-    'champions_url' => fn (string $version): string => env('RIOT_DRAGON_BASE_URL')
-        .sprintf('/cdn/%s/data/fr_FR/champion.json', $version),
+    'patch_url' => '/cdn/dragontail-{version}.tgz',
 ];
