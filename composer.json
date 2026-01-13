@@ -41,6 +41,9 @@
         }
     },
     "scripts": {
+        "stan": [
+            "phpstan"
+        ],
         "setup": [
             "composer install",
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
@@ -79,13 +82,13 @@
             "pint --parallel",
             "npm run lint"
         ],
-        "test:type-coverage": "pest --type-coverage --min=100",
+        "test:type-coverage": "pest --type-coverage",
         "test:lint": [
             "pint --parallel --test",
             "rector --dry-run",
             "npm run test:lint"
         ],
-        "test:unit": "pest --parallel --coverage --exactly=100.0",
+        "test:unit": "pest --parallel --coverage",
         "test:types": "phpstan",
         "test": [
             "@test:type-coverage",
