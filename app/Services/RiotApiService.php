@@ -6,6 +6,7 @@ namespace App\Services;
 
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 use Throwable;
@@ -37,7 +38,8 @@ final readonly class RiotApiService
 
     public function getPatch(string $version): string
     {
-        $this->downloadFile($this->urlBuilder->getPatchUrl($version), $version);
+        $downloadPath = $this->downloadFile($this->urlBuilder->getPatchUrl($version), $version);
+        $this->extractFile($downloadPath);
 
         return $this->urlBuilder->getPatchUrl($version);
     }
@@ -46,17 +48,42 @@ final readonly class RiotApiService
      * @throws Throwable
      * @throws ConnectionException
      */
-    private function downloadFile(string $filePath, string $version): void
+    private function downloadFile(string $filePath, string $version): string
     {
         if (! Storage::exists('patch')) {
             Storage::makeDirectory('patch');
         }
 
+        $downloadPath = Storage::path('patch/v.'.$version.'.tgz');
+
         $response = Http::timeout(300)
             ->withOptions([
-                'sink' => Storage::path('patch/v.'.$version.'.tgz'),
+                'sink' => $downloadPath,
             ])->get($filePath);
 
         throw_unless($response->successful(), RuntimeException::class, 'Failed to download file');
+
+        return $downloadPath;
+    }
+
+    private function extractFile(string $downloadFile): void
+    {
+        $extractDir = 'patch/latest';
+
+        if (Storage::exists($extractDir)) {
+            Storage::deleteDirectory($extractDir);
+        }
+
+        Storage::makeDirectory($extractDir);
+
+        Process::run([
+            'tar',
+            '-xzf',
+            $downloadFile,
+            '-C',
+            Storage::path($extractDir),
+        ])->throw();
+
+        unlink($downloadFile);
     }
 }

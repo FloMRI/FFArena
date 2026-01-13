@@ -24,7 +24,7 @@ final class GetPatch extends Command
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Get and download the latest patch if needed';
 
     public function __construct(private readonly RiotApiService $riotApiService)
     {
