@@ -11,7 +11,8 @@
     "require": {
         "php": "^8.4.0",
         "laravel/framework": "^12.46.0",
-        "nunomaduro/essentials": "^1.0.1"
+        "nunomaduro/essentials": "^1.0.1",
+        "predis/predis": "^3.3"
     },
     "require-dev": {
         "driftingly/rector-laravel": "^2.1.9",
@@ -26,6 +27,7 @@
         "pestphp/pest-plugin-browser": "^4.2.1",
         "pestphp/pest-plugin-laravel": "^4.0.0",
         "pestphp/pest-plugin-type-coverage": "^4.0.3",
+        "php-debugbar/php-debugbar": "^3.0.2",
         "rector/rector": "^2.3.0"
     },
     "autoload": {

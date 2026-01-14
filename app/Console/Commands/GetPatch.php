@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Services\RedisService;
 use App\Services\RiotApiService;
 use Illuminate\Console\Command;
 use Illuminate\Http\Client\ConnectionException;
@@ -26,7 +27,7 @@ final class GetPatch extends Command
      */
     protected $description = 'Get and download the latest patch if needed';
 
-    public function __construct(private readonly RiotApiService $riotApiService)
+    public function __construct(private readonly RiotApiService $riotApiService, private readonly RedisService $redisService)
     {
         parent::__construct();
     }
@@ -44,6 +45,8 @@ final class GetPatch extends Command
         if ($championsUrl !== 'https://ddragon.leagueoflegends.com/cdn/dragontail-16.1.1.tgz') {
             return CommandAlias::FAILURE;
         }
+
+        $this->redisService->setNames();
 
         return CommandAlias::SUCCESS;
     }
