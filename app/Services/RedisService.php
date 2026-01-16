@@ -13,10 +13,16 @@ use Throwable;
 final readonly class RedisService
 {
     private string $jsonPath;
+    private mixed $json;
 
+    /**
+     * @throws Throwable
+     */
     public function __construct()
     {
-        $this->jsonPath = $this->getLatestFolder().'"/data/fr_FR/champion.json"';
+        $this->jsonPath = sprintf('%s/data/fr_FR/champion.json', $this->getLatestFolder());
+        $this->json = $this->readJson();
+
     }
 
     /**
@@ -24,7 +30,13 @@ final readonly class RedisService
      */
     public function setNames(): void
     {
-        $this->readJson();
+        foreach ($this->json['data'] as $key => $value) {
+            Redis::hset('champions', $key, json_encode([
+                'name' => $value['name'],
+                'image' => $value['image']['full'],
+                'tags' => $value['tags'],
+            ]));
+        }
     }
 
     private function getLatestFolder(): string
@@ -42,6 +54,6 @@ final readonly class RedisService
     {
         throw_if(! File::exists($this->jsonPath), RuntimeException::class, 'Json file not found');
 
-        return json_decode($this->jsonPath, true);
+        return json_decode(File::get($this->jsonPath), true);
     }
 }
