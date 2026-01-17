@@ -27,7 +27,7 @@ final class GetPatch extends Command
      */
     protected $description = 'Get and download the latest patch if needed';
 
-    public function __construct(private readonly RiotApiService $riotApiService, private readonly RedisService $redisService)
+    public function __construct(private readonly RiotApiService $riotApiService)
     {
         parent::__construct();
     }
@@ -45,8 +45,6 @@ final class GetPatch extends Command
         if ($championsUrl !== 'https://ddragon.leagueoflegends.com/cdn/dragontail-16.1.1.tgz') {
             return CommandAlias::FAILURE;
         }
-
-        $this->redisService->setChampions();
 
         return CommandAlias::SUCCESS;
     }
