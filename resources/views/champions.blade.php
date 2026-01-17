@@ -1,5 +1,6 @@
 @foreach($champions as $champion)
-    <h1>{{ $champion->name }} - {{ $champion->imagePath }} -
+    <img src="{{ asset('storage/champion/'.$champion->imagePath) }}" alt="champion avatar">
+    <h1>{{ $champion->name }} -
         @foreach($champion->tags as $tag)
             {{ $tag }}
         @endforeach
