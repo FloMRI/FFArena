@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Services\RedisService;
 use App\Services\RiotApiService;
 use Illuminate\Console\Command;
 use Illuminate\Http\Client\ConnectionException;
