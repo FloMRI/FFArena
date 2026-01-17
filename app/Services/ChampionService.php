@@ -24,6 +24,8 @@ final readonly class ChampionService
             $champions[$key] = ChampionDto::mapToChampion($decoded);
         }
 
+        ksort($champions);
+
         return $champions;
     }
 }
