@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Dto\ChampionDto;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
@@ -13,7 +14,9 @@ use Throwable;
 final readonly class RedisService
 {
     private string $jsonPath;
-    private mixed $json;
+
+    /** @var array<string, mixed> */
+    private array $json;
 
     /**
      * @throws Throwable
@@ -22,19 +25,23 @@ final readonly class RedisService
     {
         $this->jsonPath = sprintf('%s/data/fr_FR/champion.json', $this->getLatestFolder());
         $this->json = $this->readJson();
-
     }
 
     /**
      * @throws Throwable
      */
-    public function setNames(): void
+    public function setChampions(): void
     {
-        foreach ($this->json['data'] as $key => $value) {
+        /** @var array<string, array{name: string, image: array{full: string}, tags: array<int, string>}> $data */
+        $data = $this->json['data'];
+
+        foreach ($data as $key => $value) {
+            $champion = ChampionDto::mapToChampionData($value);
+
             Redis::hset('champions', $key, json_encode([
-                'name' => $value['name'],
-                'image' => $value['image']['full'],
-                'tags' => $value['tags'],
+                'name' => $champion->name,
+                'image' => $champion->imagePath,
+                'tags' => $champion->tags,
             ]));
         }
     }
@@ -48,12 +55,24 @@ final readonly class RedisService
     }
 
     /**
+     * @return array<string, mixed>
+     *
      * @throws Throwable
      */
-    private function readJson(): mixed
+    private function readJson(): array
     {
         throw_if(! File::exists($this->jsonPath), RuntimeException::class, 'Json file not found');
 
-        return json_decode(File::get($this->jsonPath), true);
+        $content = File::get($this->jsonPath);
+        $decoded = json_decode($content, true);
+
+        throw_if(
+            ! is_array($decoded),
+            RuntimeException::class,
+            'Invalid JSON: expected array'
+        );
+
+        /** @var array<string, mixed> $decoded */
+        return $decoded;
     }
 }

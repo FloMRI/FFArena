@@ -42,8 +42,8 @@ final readonly class RiotApiService
      */
     public function getPatch(string $version): string
     {
-//        $downloadPath = $this->downloadFile($this->urlBuilder->getPatchUrl($version), $version);
-//        $this->extractFile($downloadPath);
+        $downloadPath = $this->downloadFile($this->urlBuilder->getPatchUrl($version), $version);
+        $this->extractFile($downloadPath);
         $this->setVersionInRedis($version);
 
         return $this->urlBuilder->getPatchUrl($version);

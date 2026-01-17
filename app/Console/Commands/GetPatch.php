@@ -46,7 +46,7 @@ final class GetPatch extends Command
             return CommandAlias::FAILURE;
         }
 
-        $this->redisService->setNames();
+        $this->redisService->setChampions();
 
         return CommandAlias::SUCCESS;
     }
