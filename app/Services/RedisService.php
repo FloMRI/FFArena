@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Dto\ChampionDto;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
@@ -14,17 +15,35 @@ final readonly class RedisService
 {
     private string $jsonPath;
 
+    /** @var array<string, mixed> */
+    private array $json;
+
+    /**
+     * @throws Throwable
+     */
     public function __construct()
     {
-        $this->jsonPath = $this->getLatestFolder().'"/data/fr_FR/champion.json"';
+        $this->jsonPath = sprintf('%s/data/fr_FR/champion.json', $this->getLatestFolder());
+        $this->json = $this->readJson();
     }
 
     /**
      * @throws Throwable
      */
-    public function setNames(): void
+    public function setChampions(): void
     {
-        $this->readJson();
+        /** @var array<string, array{name: string, image: array{full: string}, tags: array<int, string>}> $data */
+        $data = $this->json['data'];
+
+        foreach ($data as $key => $value) {
+            $champion = ChampionDto::mapToChampionData($value);
+
+            Redis::hset('champions', $key, json_encode([
+                'name' => $champion->name,
+                'image' => $champion->imagePath,
+                'tags' => $champion->tags,
+            ]));
+        }
     }
 
     private function getLatestFolder(): string
@@ -36,12 +55,24 @@ final readonly class RedisService
     }
 
     /**
+     * @return array<string, mixed>
+     *
      * @throws Throwable
      */
-    private function readJson(): mixed
+    private function readJson(): array
     {
         throw_if(! File::exists($this->jsonPath), RuntimeException::class, 'Json file not found');
 
-        return json_decode($this->jsonPath, true);
+        $content = File::get($this->jsonPath);
+        $decoded = json_decode($content, true);
+
+        throw_if(
+            ! is_array($decoded),
+            RuntimeException::class,
+            'Invalid JSON: expected array'
+        );
+
+        /** @var array<string, mixed> $decoded */
+        return $decoded;
     }
 }
