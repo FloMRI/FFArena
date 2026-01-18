@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Redis;
 
 final readonly class ChampionService
 {
+
     /**
      * @return array<ChampionDto>
      */
