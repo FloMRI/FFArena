@@ -40,10 +40,7 @@ final class GetPatch extends Command
     {
         $version = $this->riotApiService->getLatestVersion();
 
-        $championsUrl = $this->riotApiService->getPatch($version);
-        if ($championsUrl !== 'https://ddragon.leagueoflegends.com/cdn/dragontail-16.1.1.tgz') {
-            return CommandAlias::FAILURE;
-        }
+        $this->riotApiService->getPatch($version);
 
         return CommandAlias::SUCCESS;
     }

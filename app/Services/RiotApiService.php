@@ -7,14 +7,13 @@ namespace App\Services;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Process;
-use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 use Throwable;
 
 final readonly class RiotApiService
 {
-    public function __construct(private RiotDragonUrlBuilder $urlBuilder) {}
+    public function __construct(private RiotDragonUrlBuilder $urlBuilder, private RedisService $redisService) {}
 
     /**
      * @throws ConnectionException
@@ -31,7 +30,7 @@ final readonly class RiotApiService
         $version = $versionResponse->json();
         $version = $version[0];
 
-        throw_if($version !== Redis::get('latestVersion'), RuntimeException::class, 'Wrong version fetched');
+        throw_if($version !== $this->redisService->getLatestVersion(), RuntimeException::class, 'Wrong version fetched');
 
         return $version;
     }
@@ -40,13 +39,11 @@ final readonly class RiotApiService
      * @throws Throwable
      * @throws ConnectionException
      */
-    public function getPatch(string $version): string
+    public function getPatch(string $version): void
     {
         $downloadPath = $this->downloadFile($this->urlBuilder->getPatchUrl($version), $version);
         $this->extractFile($downloadPath);
-        $this->setVersionInRedis($version);
-
-        return $this->urlBuilder->getPatchUrl($version);
+        $this->redisService->setLatestVersion($version);
     }
 
     /**
@@ -90,10 +87,5 @@ final readonly class RiotApiService
         ])->throw();
 
         unlink($downloadFile);
-    }
-
-    private function setVersionInRedis(string $version): void
-    {
-        Redis::set('latestVersion', $version);
     }
 }

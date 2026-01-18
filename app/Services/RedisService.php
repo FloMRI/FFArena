@@ -46,10 +46,28 @@ final readonly class RedisService
         }
     }
 
+    /**
+     * @throws Throwable
+     */
+    public function getLatestVersion(): string
+    {
+        $latestVersion = Redis::get('latestVersion');
+        throw_if(! is_string($latestVersion), RuntimeException::class, '$latestVersion must be a string');
+
+        return $latestVersion;
+    }
+
+    public function setLatestVersion(string $version): void
+    {
+        Redis::set('latestVersion', $version);
+    }
+
+    /**
+     * @throws Throwable
+     */
     private function getLatestFolder(): string
     {
-        /** @var string $latestVersion */
-        $latestVersion = Redis::get('latestVersion');
+        $latestVersion = $this->getLatestVersion();
 
         return Storage::path('patch/latest/').$latestVersion;
     }
