@@ -23,13 +23,13 @@ final readonly class ChampionDto
         );
     }
 
-    /** @param array{name: string, image: string, tags: array<int, string>} $data */
+    /** @param array{name: string, image: string, tags: string} $data */
     public static function mapToChampion(array $data): self
     {
         return new self(
             name: $data['name'],
             imagePath: $data['image'],
-            tags: $data['tags'],
+            tags: array_filter(explode(',', $data['tags'])),
         );
     }
 }

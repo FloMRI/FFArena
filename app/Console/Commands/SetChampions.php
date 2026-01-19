@@ -38,6 +38,7 @@ final class SetChampions extends Command
     public function handle(): int
     {
         $this->redisService->setChampions();
+        $this->redisService->createSearchIndex();
 
         return CommandAlias::SUCCESS;
     }

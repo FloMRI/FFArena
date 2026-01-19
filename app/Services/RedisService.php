@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Dto\ChampionDto;
+use Exception;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
@@ -38,12 +39,34 @@ final readonly class RedisService
         foreach ($data as $key => $value) {
             $champion = ChampionDto::mapToChampionData($value);
 
-            Redis::hset('champions', $key, json_encode([
-                'name' => $champion->name,
-                'image' => $champion->imagePath,
-                'tags' => $champion->tags,
-            ]));
+            Redis::hset('champion:'.$key, 'name', $champion->name);
+            Redis::hset('champion:'.$key, 'image', $champion->imagePath);
+            Redis::hset('champion:'.$key, 'tags', implode(',', $champion->tags));
         }
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function createSearchIndex(): void
+    {
+        try {
+            Redis::rawCommand('FT.DROPINDEX', 'idx:champions');
+        } catch (Exception) {
+        }
+
+        $prefix = config('database.redis.options.prefix', '');
+
+        throw_unless(is_string($prefix), Exception::class, 'Prefix must be a string');
+
+        Redis::rawCommand(
+            'FT.CREATE', 'idx:champions',
+            'ON', 'HASH',
+            'PREFIX', '1', $prefix.'champion:',
+            'SCHEMA',
+            'name', 'TEXT', 'SORTABLE',
+            'tags', 'TAG', 'SEPARATOR', ','
+        );
     }
 
     /**
