@@ -14,8 +14,7 @@ final readonly class ChampionService
     /**
      * @return array<ChampionDto>
      *
-     * @throws Exception
-     * @throws Throwable
+     * @throws Exception|Throwable
      */
     public function getAll(): array
     {
@@ -44,7 +43,7 @@ final readonly class ChampionService
     /**
      * @return array<ChampionDto>
      *
-     * @throws Exception
+     * @throws Exception|Throwable
      */
     public function search(string $query): array
     {
@@ -70,6 +69,8 @@ final readonly class ChampionService
     /**
      * @param  array<mixed, mixed>  $results
      * @return array<ChampionDto>
+     *
+     * @throws Throwable
      */
     private function parseSearchResults(array $results): array
     {
@@ -85,32 +86,17 @@ final readonly class ChampionService
                 continue;
             }
 
-            /** @var array<int, mixed> $rawData */
+            /** @var array<int, string> $rawData */
             $rawData = $results[$i + 1];
 
             $data = [];
             for ($j = 0; $j < count($rawData); $j += 2) {
-                if (isset($rawData[$j], $rawData[$j + 1]) && is_string($rawData[$j])) {
+                if (isset($rawData[$j], $rawData[$j + 1])) {
                     $data[$rawData[$j]] = $rawData[$j + 1];
                 }
             }
 
-            if (! isset($data['name'], $data['image'], $data['tags'])) {
-                continue;
-            }
-
-            if (! is_string($data['name'])) {
-                continue;
-            }
-
-            if (! is_string($data['image'])) {
-                continue;
-            }
-
-            if (! is_string($data['tags'])) {
-                continue;
-            }
-
+            /** @var array{name: string, image: string, tags: string} $data */
             $champions[] = ChampionDto::mapToChampion($data);
         }
 

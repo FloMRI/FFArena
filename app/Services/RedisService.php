@@ -46,7 +46,7 @@ final readonly class RedisService
     }
 
     /**
-     * @throws Exception
+     * @throws Exception|Throwable
      */
     public function createSearchIndex(): void
     {
