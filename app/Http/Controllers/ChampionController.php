@@ -15,6 +15,9 @@ final readonly class ChampionController
 {
     public function __construct(private ChampionService $championService) {}
 
+    /**
+     * @throws Throwable
+     */
     public function showAll(): Factory|View
     {
         $champions = $this->championService->getAll();
@@ -23,8 +26,7 @@ final readonly class ChampionController
     }
 
     /**
-     * @throws Exception
-     * @throws Throwable
+     * @throws Exception|Throwable
      */
     public function search(Request $request): Factory|View
     {
