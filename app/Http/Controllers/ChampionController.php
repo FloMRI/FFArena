@@ -30,6 +30,10 @@ final readonly class ChampionController
      */
     public function search(Request $request): Factory|View
     {
+        $request->validate([
+            'search' => ['required', 'string'],
+        ]);
+
         $query = $request->get('search');
         throw_if(! is_string($query), Exception::class, 'Query must be a string');
 

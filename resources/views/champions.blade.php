@@ -1,3 +1,4 @@
+@include('welcome')
 
 <form method="POST" action="/champions">
     @csrf
@@ -9,10 +10,10 @@
 
 
 @foreach($champions as $champion)
-    <img src="{{ asset('storage/champion/'.$champion->imagePath) }}" alt="champion avatar">
-    <h1>{{ $champion->name }} -
-        @foreach($champion->tags as $tag)
-            {{ $tag }}
-        @endforeach
-    </h1>
+    <div>
+        <img src="{{ asset('storage/champion/'.$champion->imagePath) }}" alt="champion avatar" width="128" height="128">
+        <p title="{{ $champion->name }} - @foreach($champion->tags as $tag)@if($loop->last){{ $tag }}@else{{ $tag }}/@endif @endforeach">
+
+        </p>
+    </div>
 @endforeach
