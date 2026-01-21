@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Dto;
 
+use Throwable;
+
 final readonly class ChampionDto
 {
     /** @param array<mixed, mixed> $tags */
@@ -23,13 +25,15 @@ final readonly class ChampionDto
         );
     }
 
-    /** @param array{name: string, image: string, tags: array<int, string>} $data */
+    /** @param array{name: string, image: string, tags: string} $data
+     * @throws Throwable
+     */
     public static function mapToChampion(array $data): self
     {
         return new self(
             name: $data['name'],
             imagePath: $data['image'],
-            tags: $data['tags'],
+            tags: array_filter(explode(',', $data['tags'])),
         );
     }
 }
