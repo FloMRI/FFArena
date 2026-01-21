@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Dto\ChampionDto;
+use App\Enums\ChampionAuthorization;
 use Exception;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Redis;
@@ -42,6 +43,7 @@ final readonly class RedisService
             Redis::hset('champion:'.$key, 'name', $champion->name);
             Redis::hset('champion:'.$key, 'image', $champion->imagePath);
             Redis::hset('champion:'.$key, 'tags', implode(',', $champion->tags));
+            Redis::hset('champion:'.$key, 'authorize', $this->authorizeChampion($champion)->value);
         }
     }
 
@@ -65,7 +67,8 @@ final readonly class RedisService
             'PREFIX', '1', $prefix.'champion:',
             'SCHEMA',
             'name', 'TEXT', 'SORTABLE',
-            'tags', 'TAG', 'SEPARATOR', ','
+            'tags', 'TAG', 'SEPARATOR', ',',
+            'authorize', 'TAG'
         );
     }
 
@@ -115,5 +118,50 @@ final readonly class RedisService
 
         /** @var array<string, mixed> $decoded */
         return $decoded;
+    }
+
+    /**
+     * @throws Throwable
+     */
+    private function authorizeChampion(ChampionDto $data): ChampionAuthorization
+    {
+        $jsonPath = Storage::path('championsRules.json');
+        throw_if(! File::exists($jsonPath), Exception::class, 'ChampionRules.json file not found');
+
+        $jsonFile = File::get($jsonPath);
+        /** @var array{authorized: array{names: array<int, string>, tags: array<int, string>}, excluded: array{names: array<int, string>, tags: array<int, string>}} $json */
+        $json = json_decode($jsonFile, true);
+
+        $jsonAuthorized = $json['authorized'];
+        $jsonExcluded = $json['excluded'];
+
+        // Check first excluded names
+        foreach ($jsonExcluded['names'] as $name) {
+            if ($name === $data->name) {
+                return ChampionAuthorization::EXCLUDED;
+            }
+        }
+
+        // Check Authorized
+        foreach ($jsonAuthorized as $key => $rule) {
+            if ($key === 'names') {
+                if (array_any($rule, fn ($name): bool => $name === $data->name)) {
+                    return ChampionAuthorization::AUTHORIZED;
+                }
+
+                continue;
+            }
+
+            if (array_any($data->tags, fn ($tag): bool => array_any($rule, fn ($ruleTag): bool => $ruleTag === $tag))) {
+                return ChampionAuthorization::AUTHORIZED;
+            }
+        }
+
+        // Check excluded
+        if (array_any($data->tags, fn ($tag): bool => array_any($jsonExcluded['tags'], fn ($ruleTag): bool => $ruleTag === $tag))) {
+            return ChampionAuthorization::EXCLUDED;
+        }
+
+        return ChampionAuthorization::UNDETERMINED;
     }
 }

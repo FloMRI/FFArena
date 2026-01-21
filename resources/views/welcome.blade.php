@@ -19,4 +19,7 @@
         </style>
     @endif
 </head>
+<body>
+    <h1>FFArena</h1>
+</body>
 </html>
