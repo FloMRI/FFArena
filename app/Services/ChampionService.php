@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Dto\ChampionDto;
+use App\Enums\ChampionAuthorization;
 use Exception;
 use Illuminate\Support\Facades\Redis;
 use Throwable;
@@ -27,11 +28,13 @@ final readonly class ChampionService
 
         foreach ($keys as $fullKey) {
             $keyWithoutPrefix = str_replace($prefix, '', $fullKey);
-            /** @var array{name: string, image: string, tags: string} $data */
+            /** @var array{name: string, image: string, tags: string, authorize: string} $data */
             $data = Redis::hgetall($keyWithoutPrefix);
+            if ($data['authorize'] !== ChampionAuthorization::AUTHORIZED->value) {
+                continue;
+            }
 
             $championKey = str_replace('champion:', '', $keyWithoutPrefix);
-
             $champions[$championKey] = ChampionDto::mapToChampion($data);
         }
 
@@ -54,7 +57,7 @@ final readonly class ChampionService
         $results = Redis::rawCommand(
             'FT.SEARCH',
             'idx:champions',
-            sprintf('@name:*%s*', $query),
+            sprintf('@name:*%s* @authorize:{%s}', $query, ChampionAuthorization::AUTHORIZED->value),
             'SORTBY', 'name', 'ASC',
             'LIMIT', '0', '50'
         );
