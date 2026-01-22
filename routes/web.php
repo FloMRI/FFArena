@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\ChampionController;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', [ChampionController::class, 'showAll']);
-Route::post('/', [ChampionController::class, 'search']);
+Route::get('/', fn (): Factory|View => view('champions'));
