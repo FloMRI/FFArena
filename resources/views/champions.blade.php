@@ -1,6 +1,6 @@
 @include('welcome')
 
-<form method="POST" action="/champions">
+<form method="POST" action="/">
     @csrf
 
     <input id="search" name="search" type="text">
@@ -11,9 +11,8 @@
 
 @foreach($champions as $champion)
     <div>
-        <img src="{{ asset('storage/champion/'.$champion->imagePath) }}" alt="champion avatar" width="128" height="128">
         <p title="{{ $champion->name }} - @foreach($champion->tags as $tag)@if($loop->last){{ $tag }}@else{{ $tag }}/@endif @endforeach">
-
+            <img src="{{ asset('storage/champion/'.$champion->imagePath) }}" alt="champion avatar" width="128" height="128">
         </p>
     </div>
 @endforeach
